@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-vcm__$5h!b$a^=z_!mno-rx0y5(k5k9tx_@2(h4#!6on)#h3f6'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
@@ -64,6 +65,7 @@ INSTALLED_APPS = list(SHARED_APPS) + list(TENANT_APPS)
 MIDDLEWARE = [
     'django_tenants.middleware.main.TenantMainMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,7 +73,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'accounts.middleware.LoginRequiredMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -98,15 +99,23 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'school_saas',
-        'USER': 'postgres',
-        'PASSWORD': 'Dgliger@123!',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default='postgres://postgres:Dgliger@123!@localhost:5432/school_saas',
+        conn_max_age=600,
+        engine='django_tenants.postgresql_backend', # Keeps your tenant logic intact
+    )
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django_tenants.postgresql_backend',
+#         'NAME': 'school_saas',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Dgliger@123!',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
 
 DATABASE_ROUTERS = (
     'django_tenants.routers.TenantSyncRouter',
@@ -162,3 +171,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 PUBLIC_SCHEMA_URLCONF = "public.urls"
 
+SECRET_KEY = os.environ.get('SECRET_KEY', 'Whitetiger@47')
