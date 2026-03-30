@@ -1,0 +1,50 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block content %}
+<div class="p-8 max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-slate-900">Bulk Fee Generation</h1>
+        <p class="text-slate-500">Generate monthly invoices for an entire class at once.</p>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <form method="post" class="p-8 space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Select Class</label>
+                    <select name="student_class" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Choose Class --</option>
+                        {% for cls in classes %}
+                            <option value="{{ cls.id }}">{{ cls.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Billing Month</label>
+                    <select name="month" required class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        </select>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-start space-x-3">
+                <span class="text-indigo-600">ℹ️</span>
+                <p class="text-xs text-indigo-700 leading-relaxed">
+                    This action will create "Unpaid" invoices for all students in the selected class based on the <strong>Fee Structure</strong>. It will automatically skip students who were already billed for this month.
+                </p>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Generate Invoices
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

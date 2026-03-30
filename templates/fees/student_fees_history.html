@@ -1,0 +1,86 @@
+{% extends "dashboard/dashboard_base.html" %}
+{% block content %}
+<div class="p-8 max-w-5xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+            <a href="{% url 'fee_dashboard' %}" class="text-sm font-bold text-indigo-600 hover:underline flex items-center gap-2 mb-2">
+                ← Back to Fee Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-slate-900">Fee History: {{ student.name }}</h1>
+            <p class="text-slate-500 font-medium">Roll No: #{{ student.roll_number }} | Unique ID: {{ student.unique_id }}</p>
+        </div>
+        <a href="{% url 'collect_payment' student.id %}" class="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-100">
+            + Collect New Fee
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Fees Logged</p>
+            <p class="text-2xl font-mono font-bold text-slate-900">₹{{ total_fees_all_time|default:"0.00" }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Paid</p>
+            <p class="text-2xl font-mono font-bold text-emerald-600">₹{{ total_paid_all_time|default:"0.00" }}</p>
+        </div>
+        <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <p class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Current Outstanding</p>
+            <p class="text-2xl font-mono font-bold text-red-500">₹{{ total_balance|default:"0.00" }}</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="font-bold text-slate-800">Payment Breakdown by Month</h3>
+        </div>
+        <table class="w-full text-left">
+            <thead>
+                <tr class="bg-slate-50/50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Month/Year</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Total Due</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Amount Paid</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Balance</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for inv in history %}
+                <tr class="hover:bg-slate-50/30 transition">
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-slate-900">{{ inv.get_month_display }} {{ inv.year }}</div>
+                        <div class="text-[10px] text-slate-400 font-mono italic">Inv ID: #{{ inv.id }}</div>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-slate-600">₹{{ inv.total_amount }}</td>
+                    <td class="px-6 py-4">
+                        <div class="font-mono font-bold text-emerald-600">₹{{ inv.paid_amount }}</div>
+                        {% for trans in inv.transactions.all %}
+                            <div class="text-[10px] text-slate-400 tracking-tighter">
+                                • ₹{{ trans.amount_paid }} via {{ trans.get_payment_mode_display }} ({{ trans.date_paid|date:"d M" }})
+                            </div>
+                        {% endfor %}
+                    </td>
+                    <td class="px-6 py-4 font-mono font-bold {% if inv.balance > 0 %}text-red-500{% else %}text-slate-300{% endif %}">
+                        ₹{{ inv.balance }}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if inv.status == 'paid' %}
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-bold uppercase">Fully Settled</span>
+                        {% elif inv.status == 'partial' %}
+                            <span class="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-[10px] font-bold uppercase">Partial</span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-bold uppercase">Debt</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-20 text-center text-slate-400 italic">
+                        No fee records found for this student. Click "Collect New Fee" to start.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

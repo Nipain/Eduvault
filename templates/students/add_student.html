@@ -1,0 +1,206 @@
+{% extends "dashboard/dashboard_base.html" %} {% block content %}
+<div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="mb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">
+                {% if is_edit %}Update Student: {{ student.name }}{% else %}Student Admission{% endif %}
+            </h1>
+            <p class="text-slate-500 mt-1">
+                {% if is_edit %}Modify the records for this student.{% else %}Enroll a new student into the {{ request.tenant.name }} database.{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'student_list' %}" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition">← Back to List</a>
+    </div>
+
+    <div class="max-w-4xl mx-auto py-8 px-4">
+
+    {% if messages %}
+        <div id="message-container" class="fixed top-4 right-4 z-50 space-y-4 min-w-[300px]">
+            {% for message in messages %}
+            <div class="flex items-center p-4 {% if message.tags == 'success' %}bg-emerald-50 border-emerald-200 text-emerald-800{% else %}bg-blue-50 border-blue-200 text-blue-800{% endif %} border rounded-2xl shadow-xl animate-bounce-in">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full {% if message.tags == 'success' %}bg-emerald-500{% else %}bg-blue-500{% endif %} flex items-center justify-center text-white mr-3">
+                    {% if message.tags == 'success' %}✓{% else %}ℹ{% endif %}
+                </div>
+                <div class="text-sm font-bold pr-8">
+                    {{ message }}
+                </div>
+                <button onclick="this.parentElement.remove()" class="ml-auto text-slate-400 hover:text-slate-600 text-xl font-light">×</button>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="mb-8 flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">
+                {% if is_edit %}Update Student: {{ student.name }}{% else %}Student Admission{% endif %}
+            </h1>
+            <p class="text-slate-500 mt-1">
+                {% if is_edit %}Modify the records for this student.{% else %}Enroll a new student into the {{ request.tenant.name }} database.{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'student_list' %}" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition">← Back to List</a>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <form method="post" class="p-8 space-y-8">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-100">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3 text-sm">01</span>
+                    Basic Information
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+                        {{ form.name }}
+                        <p class="text-red-500 text-xs mt-1">{{ form.name.errors.0 }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Class / Grade</label>
+                        {{ form.student_class }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Roll Number</label>
+                        {{ form.roll_number }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Admission Date</label>
+                        {{ form.admission_date }}
+                    </div>
+                    <div>
+                         <label class="block text-sm font-semibold text-slate-700 mb-1.5">Transport Opt-in</label>
+                         <div class="flex items-center mt-3">
+                            {{ form.opted_transport }}
+                            <span class="ml-2 text-sm text-slate-500 italic">Student requires school bus service</span>
+                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center mr-3 text-sm">02</span>
+                    Guardian Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Guardian Name</label>
+                        {{ form.guardian_name }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
+                        {{ form.guardian_phone }}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Relation</label>
+                        {{ form.guardian_relation }}
+                    </div>
+                    <div id="other-field" class="transition-all duration-300">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Specify Other Relation</label>
+                        {{ form.guardian_relation_other }}
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Residential Address</label>
+                        {{ form.address }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-100 flex items-center justify-end space-x-4">
+                <button type="reset" class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-700">Clear Form</button>
+                <button type="submit" class="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all active:scale-95">
+                    Save Admission Record
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        background: transparent;
+        bottom: 0;
+        color: transparent;
+        cursor: pointer;
+        height: auto;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+    }
+
+    /* Ensure the container is relative so the hidden picker covers the input */
+    div > input[type="date"] {
+        position: relative;
+    }
+    input:not([type="checkbox"]), select, textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        outline: none;
+        transition: all 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #6366f1;
+        background-color: #ffffff;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #6366f1;
+    }
+
+    @keyframes bounceIn {
+        0% { opacity: 0; transform: translateX(20px); }
+        60% { opacity: 1; transform: translateX(-5px); }
+        100% { transform: translateX(0); }
+    }
+    .animate-bounce-in {
+        animation: bounceIn 0.5s ease-out forwards;
+    }
+</style>
+
+<script>
+    const relationField = document.getElementById("id_guardian_relation");
+    const otherField = document.getElementById("other-field");
+
+    function toggleOtherField() {
+        if (relationField.value === "other") {
+            otherField.style.opacity = "1";
+            otherField.style.pointerEvents = "auto";
+            otherField.classList.remove('hidden');
+        } else {
+            otherField.style.opacity = "0";
+            otherField.style.pointerEvents = "none";
+            otherField.classList.add('hidden');
+        }
+    }
+
+    relationField.addEventListener("change", toggleOtherField);
+    toggleOtherField();
+
+    // Auto-dismiss messages after 5 seconds
+    setTimeout(() => {
+        const container = document.getElementById('message-container');
+        if (container) {
+            container.style.transition = "opacity 0.5s ease";
+            container.style.opacity = "0";
+            setTimeout(() => container.remove(), 500);
+        }
+    }, 5000);
+</script>
+{% endblock %}

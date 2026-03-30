@@ -1,0 +1,104 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block content %}
+<div class="p-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-slate-900">Students</h1>
+            <p class="text-slate-500">Showing {% if search_query %}results for "{{ search_query }}"{% else %}10 most recent students{% endif %}.</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <form method="GET" action="{% url 'student_list' %}" class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">🔍</span>
+                <input type="text" name="search" value="{{ search_query }}" placeholder="Search name or ID..." 
+                    class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none w-64 transition-all">
+            </form>
+            
+            <a href="/students/add/" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 flex items-center">
+                <span class="mr-2">+</span> Admit Student
+            </a>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-slate-50 border-b border-slate-100">
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Unique ID</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Class</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Guardian</th>
+                    <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for student in students %}
+                <tr x-data="{ expanded: false }" class="border-b border-slate-100 last:border-0 hover:bg-slate-50/80 cursor-pointer transition-colors" @click="expanded = !expanded">
+                    <td class="px-6 py-4 font-mono text-sm font-bold text-indigo-600">{{ student.unique_id }}</td>
+                    
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="font-bold text-slate-900">{{ student.name }}</div>
+                            <span class="ml-2 text-[10px] text-slate-400 transition-transform" :class="expanded ? 'rotate-180' : ''">▼</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-mono">Roll: #{{ student.roll_number }}</div>
+                    </td>
+                    
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full text-[11px] font-bold uppercase tracking-wider">
+                            {{ student.student_class }}
+                        </span>
+                    </td>
+                    
+                    <td class="px-6 py-4 text-sm text-slate-600">
+                        {{ student.guardian_name }}
+                    </td>
+
+                    <td class="px-6 py-4 text-right space-x-2" x-data="{ showModal: false }" @click.stop>
+                        <button @click="showModal = true" class="text-emerald-600 hover:text-emerald-800 text-sm font-bold transition">Promote</button>
+                        <a href="{% url 'edit_student' student.id %}" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold transition">Edit</a>
+
+                        <template x-teleport="body">
+                            <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" x-cloak>
+                                <div @click.away="showModal = false" class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">📈</div>
+                                        <h3 class="text-xl font-bold text-slate-900">Promote Student?</h3>
+                                        <p class="text-slate-500 mt-2">Do you want to promote <strong>{{ student.name }}</strong>?</p>
+                                    </div>
+                                    <div class="flex gap-3 mt-8">
+                                        <button @click="showModal = false" class="flex-1 px-4 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold">Cancel</button>
+                                        <a href="{% url 'promote_student' student.id %}" class="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl font-bold text-center">Yes, Promote</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </td>
+                </tr>
+                
+                <tr x-show="expanded" x-cloak class="bg-slate-50/50">
+                    <td colspan="5" class="px-8 py-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div>
+                                <h4 class="text-[10px] uppercase font-bold text-slate-400 mb-3 tracking-widest">Academic Details</h4>
+                                <ul class="space-y-2 text-sm">
+                                    <li class="flex justify-between border-b border-slate-200 pb-1">
+                                        <span class="text-slate-500">Admission Date:</span>
+                                        <span class="font-medium text-slate-800">{{ student.admission_date }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-20 text-center text-slate-400 italic">No students found matching your criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
