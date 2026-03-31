@@ -17,6 +17,8 @@ def signup(request):
 
         if form.is_valid():
 
+            raw_host = request.get_host()
+            clean_host = raw_host.split(':')[0]
             school_name = form.cleaned_data["school_name"]
             subdomain = form.cleaned_data["subdomain"].lower().replace(" ", "")
             email = form.cleaned_data["admin_email"]
@@ -41,7 +43,7 @@ def signup(request):
 
                     # 2️⃣ Create domain
                     domain = Domain(
-                        domain=f"{subdomain}.localhost",
+                        domain=f"{subdomain}.{clean_host}",
                         tenant=tenant,
                         is_primary=True
                     )
@@ -58,6 +60,7 @@ def signup(request):
                             is_staff=True
                         )
 
+
                     # 4️⃣ Create subscription (public schema)
                     Subscription.objects.create(
                         school=tenant,
@@ -65,7 +68,8 @@ def signup(request):
                         end_date=timezone.now() + timedelta(days=plan.duration_days)
                     )
 
-                return redirect(f"http://{subdomain}.localhost:8000/login")
+                # This combines your new school name with the current website address
+                return redirect(f"{request.scheme}://{subdomain}.{raw_host}/login/")
 
             except Exception as e:
                 form.add_error(None, f"Something went wrong: {str(e)}")
@@ -74,8 +78,6 @@ def signup(request):
         form = SchoolSignupForm()
 
     return render(request, "public/signup.html", {"form": form})
-
-from django.shortcuts import redirect
 
 
 def login_redirect(request):
